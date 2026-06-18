@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String      @id @default(cuid())
+  email     String      @unique
+  createdAt DateTime    @default(now())
+  card      Card?
+  tokens    AuthToken[]
+  exchanges Exchange[]  @relation("ExchangeOwner")
+}
+
+model Card {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String
+  title     String?
+  company   String?
+  email     String
+  phone     String?
+  website   String?
+  linkedin  String?
+  bio       String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  exchanges Exchange[]
+}
+
+model Exchange {
+  id        String   @id @default(cuid())
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  ownerId   String
+  owner     User     @relation("ExchangeOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  name      String
+  email     String
+  phone     String?
+  company   String?
+  title     String?
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model AuthToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  email     String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
